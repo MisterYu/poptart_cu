@@ -1,0 +1,8 @@
+*.pdb
+*.user
+*.filters
+*.pdb
+*.db
+x64
+bin
+.vs
