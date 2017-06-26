@@ -18,7 +18,6 @@
 // includes, system
 #include <iostream>
 #include <stdlib.h>
-#include <memory>
 
 // Required to include CUDA vector types
 #include <cuda_runtime.h>
@@ -27,8 +26,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // declaration, forward
-extern "C" bool runTest(const int argc, const char **argv,
-                        char *data, int2 *data_int2, unsigned int len);
 extern "C" bool runAcousticTest(const int argc, const char **argv,
 	float3 *rays, unsigned int n_rays, float3 *atm_layers, unsigned int n_atm_layers);
 
@@ -38,16 +35,6 @@ extern "C" bool runAcousticTest(const int argc, const char **argv,
 int
 main(int argc, char **argv)
 {
-    // input data
-    int len = 16;
-    // the data has some zero padding at the end so that the size is a multiple of
-    // four, this simplifies the processing as each thread can process four
-    // elements (which is necessary to avoid bank conflicts) but no branching is
-    // necessary to avoid out of bounds reads
-    char str[] = { 82, 111, 118, 118, 121, 42, 97, 121, 124, 118, 110, 56,
-                   10, 10, 10, 10
-                 };
-
 	// emulate pattern from sample code
 	// init angles
 	int n_rays = 6;
@@ -58,7 +45,6 @@ main(int argc, char **argv)
 		prop_rays[i].y = 0.;            // init propagated attenuation to 0f for all angles
 		prop_rays[i].z = 0.;            // init propagated radii to 0f for all angles
 	}
-    std::unique_ptr<float3[]> rays(new float3[n_rays]);
 	// init layers
 	int n_atm_layers = 2;
 	float wavefront_velocities[2] = {325., 361.};   // m/s
@@ -70,15 +56,6 @@ main(int argc, char **argv)
 		atm_layers[i].y = layer_attn[i];
         atm_layers[i].z = h_atm[i];
 	}
-
-    // Use int2 showing that CUDA vector types can be used in cpp code
-    int2 i2[16];
-
-    for (int i = 0; i < len; i++)
-    {
-        i2[i].x = str[i];
-        i2[i].y = 10;
-    }
 
     bool bTestResult;
 
