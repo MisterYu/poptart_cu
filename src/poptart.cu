@@ -56,11 +56,13 @@ refract(float theta1, float v1, float v2)
 ///////////////////////////////////////////////////////////////////////////////
 //! Demonstration of acoustic ray trace
 //! @param rays  rays to trace (in and out)
+//! @param atms
+//! @param n_atms
 ///////////////////////////////////////////////////////////////////////////////
 __global__ void
 acoustic_trace_kernel(float3 *rays, float3 *atms, const int n_atms)
 {
-	// write data to global memory
+	// get current ray ID
 	const unsigned int tid = threadIdx.x;
 	float3 ray = rays[tid];
     if (tid == 5) {
@@ -68,11 +70,11 @@ acoustic_trace_kernel(float3 *rays, float3 *atms, const int n_atms)
     }
 	for (int i_atm = 0; i_atm < n_atms; i_atm++) {
         float h_layer = atms[i_atm].z;
-        float t = h_layer / cos(ray.x);
+        float d_layer = h_layer / cos(ray.x);
         // update attentuation
-        ray.y -= t * atms[i_atm].y + 20 * log10(t);
+        ray.y -= d_layer * atms[i_atm].y + 20.0 * log10(d_layer);
         // update projected radii/ ground distance
-        ray.z += sqrt(t*t - h_layer*h_layer);
+        ray.z += sqrt(d_layer*d_layer - h_layer*h_layer);
         // update angle
         if (i_atm < n_atms - 1)
             ray.x = refract(ray.x, atms[i_atm].x, atms[i_atm + 1].x);
@@ -80,6 +82,7 @@ acoustic_trace_kernel(float3 *rays, float3 *atms, const int n_atms)
             std::printf("%f %f %f\n", ray.x, ray.y, ray.z);
         }
 	}
+    // write data to global memory
     rays[tid] = ray;
 }
 
