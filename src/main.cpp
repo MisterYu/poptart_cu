@@ -40,15 +40,16 @@ main(int argc, char **argv)
     float pi = 3.14159265359f;
 	int n_rays = 1000;
 	float angles[1000] = {0.};
-	float3 prop_rays[1000];
+	float4 prop_rays[1000];
 	for (int i = 0; i < n_rays; i++) {
 		prop_rays[i].x = i * pi / 2. / n_rays;
 		prop_rays[i].y = 0.;            // init propagated attenuation to 0f for all angles
 		prop_rays[i].z = 0.;            // init propagated radii to 0f for all angles
+        prop_rays[i].w = 0.;            // init time to ground to 0f for all angles
 	}
 	// init layers
 	int n_atm_layers = 2;
-	float wavefront_velocities[2] = {325., 361.};   // m/s
+	float wavefront_velocities[2] = {325., 361.};   // wavefront velocity = speed of sound (m/s)
 	float layer_attn[2] = {0.000424f, 0.000362f};	// dB/m @ 1atm
 	float h_atm[2] = { 2000.f, 3000.f };            // m
 	float3 atm_layers[2];
@@ -68,5 +69,6 @@ main(int argc, char **argv)
         std::printf("%f %f %f %f\n", angles[i_ray], prop_rays[i_ray].x, prop_rays[i_ray].y, prop_rays[i_ray].z);
     }
 
+    // calcu
     exit(bTestResult ? EXIT_SUCCESS : EXIT_FAILURE);
 }

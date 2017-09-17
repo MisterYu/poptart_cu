@@ -60,21 +60,25 @@ refract(float theta1, float v1, float v2)
 //! @param n_atms
 ///////////////////////////////////////////////////////////////////////////////
 __global__ void
-acoustic_trace_kernel(float3 *rays, float3 *atms, const int n_atms)
+acoustic_trace_kernel(float4 *rays, float3 *atms, const int n_atms)
 {
 	// get current ray ID
 	const unsigned int tid = threadIdx.x;
-	float3 ray = rays[tid];
+	float4 ray = rays[tid];
 	for (int i_atm = 0; i_atm < n_atms; i_atm++) {
         float h_layer = atms[i_atm].z;
+        float sound_speed = atms[i_atm].x;
+        // get distance traversed by the ray
         float d_layer = h_layer / cos(ray.x);
+        // update time of travel before ground intersection
+        ray.w += d_layer / sound_speed;
         // update attentuation
         ray.y -= d_layer * atms[i_atm].y + 20.0 * log10(d_layer);
         // update projected radii/ ground distance
         ray.z += sqrt(d_layer*d_layer - h_layer*h_layer);
         // update angle
         if (i_atm < n_atms - 1)
-            ray.x = refract(ray.x, atms[i_atm].x, atms[i_atm + 1].x);        
+            ray.x = refract(ray.x, sound_speed, atms[i_atm + 1].x);
 	}
     // write data to global memory
     rays[tid] = ray;
@@ -91,7 +95,7 @@ acoustic_trace_kernel(float3 *rays, float3 *atms, const int n_atms)
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" bool
 runAcousticTest(const int argc, const char **argv, 
-	float3 *h_rays, unsigned int n_rays, float3 *h_atm_layers, unsigned int n_atm_layers)	
+	float4 *h_rays, unsigned int n_rays, float3 *h_atm_layers, unsigned int n_atm_layers)	
 {
 	// use command-line specified CUDA device, otherwise use device with highest Gflops/s
 	findCudaDevice(argc, (const char **)argv);
