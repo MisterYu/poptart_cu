@@ -65,9 +65,6 @@ acoustic_trace_kernel(float3 *rays, float3 *atms, const int n_atms)
 	// get current ray ID
 	const unsigned int tid = threadIdx.x;
 	float3 ray = rays[tid];
-    if (tid == 5) {
-        std::printf("%f %f %f\n", ray.x, ray.y, ray.z);
-    }
 	for (int i_atm = 0; i_atm < n_atms; i_atm++) {
         float h_layer = atms[i_atm].z;
         float d_layer = h_layer / cos(ray.x);
@@ -77,10 +74,7 @@ acoustic_trace_kernel(float3 *rays, float3 *atms, const int n_atms)
         ray.z += sqrt(d_layer*d_layer - h_layer*h_layer);
         // update angle
         if (i_atm < n_atms - 1)
-            ray.x = refract(ray.x, atms[i_atm].x, atms[i_atm + 1].x);
-        if (tid == 5) {
-            std::printf("%f %f %f\n", ray.x, ray.y, ray.z);
-        }
+            ray.x = refract(ray.x, atms[i_atm].x, atms[i_atm + 1].x);        
 	}
     // write data to global memory
     rays[tid] = ray;
