@@ -37,11 +37,12 @@ main(int argc, char **argv)
 {
 	// emulate pattern from sample code
 	// init angles
-	int n_rays = 6;
-	float angles[6] = {0., 15., 30., 45., 60., 75.};
-	float3 prop_rays[6];
+    float pi = 3.14159265359f;
+	int n_rays = 1000;
+	float angles[1000] = {0.};
+	float3 prop_rays[1000];
 	for (int i = 0; i < n_rays; i++) {
-		prop_rays[i].x = angles[i] * 3.14159265359f / 180.f;
+		prop_rays[i].x = i * pi / 2. / n_rays;
 		prop_rays[i].y = 0.;            // init propagated attenuation to 0f for all angles
 		prop_rays[i].z = 0.;            // init propagated radii to 0f for all angles
 	}
